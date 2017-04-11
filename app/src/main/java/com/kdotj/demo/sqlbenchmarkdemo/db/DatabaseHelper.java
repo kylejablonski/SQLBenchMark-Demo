@@ -58,7 +58,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public long storeCitiesInDbPrepared(List<CityResponse.City> cityList){
         long startTime = System.currentTimeMillis();
         SQLiteDatabase db = getWritableDatabase();
-        SQLiteStatement stmtInsert = db.compileStatement(CitiesContracts.SQL_PREPARED_INSERT);
+        SQLiteStatement stmtInsert = db.compileStatement(CitiesContracts.SQL_INSERT);
 
         try {
             db.beginTransaction();
@@ -79,6 +79,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         return System.currentTimeMillis() - startTime;
 
+    }
+
+    public long storeCitiesRawInsert(List<CityResponse.City> cityList){
+        long startTime = System.currentTimeMillis();
+        SQLiteDatabase db = getWritableDatabase();
+        for(CityResponse.City city: cityList) {
+            db.rawQuery(CitiesContracts.SQL_INSERT, new String []{city.name, city.country, city.subCountry, city.geoNameId});
+        }
+        return System.currentTimeMillis() - startTime;
     }
 
     public void deleteCities(){

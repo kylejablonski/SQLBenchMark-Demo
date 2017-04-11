@@ -26,7 +26,7 @@ public class CitiesContracts implements BaseColumns{
     public static final String RAW_QUERY_GET_COUNTRIES = "SELECT * FROM "+ TABLE_NAME;
 
 
-    public static final String SQL_PREPARED_INSERT = "INSERT INTO "+ TABLE_NAME + " ( "
+    public static final String SQL_INSERT = "INSERT INTO "+ TABLE_NAME + " ( "
             + CitiesContracts.KEY_NAME + ", "
             + CitiesContracts.KEY_COUNTRY + ", "
             + CitiesContracts.KEY_SUB_COUNTRY + ", "

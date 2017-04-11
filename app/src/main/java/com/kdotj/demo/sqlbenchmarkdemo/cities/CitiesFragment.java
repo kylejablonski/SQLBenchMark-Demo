@@ -86,6 +86,7 @@ public class CitiesFragment extends Fragment {
         mPbLoading = (ProgressBar) view.findViewById(R.id.pb_loading);
         mCityProcessingTime = (AppCompatTextView) view.findViewById(R.id.tv_time_spent);
         mCityRecyclerView = (RecyclerView) view.findViewById(R.id.rv_cities);
+        mCityRecyclerView.addItemDecoration(new DividerItemDecoration(getContext()));
         mCityRecyclerView.setAdapter(mCityAdapter);
         mCityRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
         return view;
@@ -136,6 +137,9 @@ public class CitiesFragment extends Fragment {
         if(mGroupOption == R.id.option_content_values){
             mTimePassed = databaseHelper.storeCitiesInDb(mCityList);
             mProcedure = "ContentValues";
+        }else if(mGroupOption == R.id.option_raw_query){
+            mTimePassed = databaseHelper.storeCitiesRawInsert(mCityList);
+            mProcedure = "Raw Query";
         }else{
             mTimePassed = databaseHelper.storeCitiesInDbPrepared(mCityList);
             mProcedure = "Prepared statement";

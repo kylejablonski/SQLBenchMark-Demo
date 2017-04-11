@@ -38,6 +38,12 @@
             android:layout_height="wrap_content"
             android:text="Insert via Prepared statement" />
 
+        <android.support.v7.widget.AppCompatRadioButton
+            android:id="@+id/option_raw_query"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Insert via Raw Query" />
+
     </RadioGroup>
 
     <android.support.v7.widget.RecyclerView
