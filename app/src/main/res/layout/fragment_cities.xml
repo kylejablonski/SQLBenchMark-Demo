@@ -9,48 +9,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="16dp"
+        android:textColor="#dd000000"
+        android:textSize="16sp"
         tools:text="Insert time took 4000ms using prepared statement" />
-
-    <RadioGroup
-        android:id="@+id/group_options"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/tv_time_spent"
-        android:orientation="vertical"
-        android:padding="8dp">
-
-        <android.support.v7.widget.AppCompatTextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="8dp"
-            android:text="Select an insert option" />
-
-        <android.support.v7.widget.AppCompatRadioButton
-            android:id="@+id/option_content_values"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="Insert via ContentValues" />
-
-        <android.support.v7.widget.AppCompatRadioButton
-            android:id="@+id/option_prepared"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Insert via Prepared statement" />
-
-        <android.support.v7.widget.AppCompatRadioButton
-            android:id="@+id/option_raw_query"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Insert via Raw Query" />
-
-    </RadioGroup>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rv_cities"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/group_options"
+        android:layout_below="@+id/tv_time_spent"
         tools:listitem="@layout/item_city" />
 
     <android.support.design.widget.FloatingActionButton

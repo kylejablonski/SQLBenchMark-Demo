@@ -30,6 +30,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         super(context, DB_NAME, null, DB_VERSION);
     }
 
+    /**
+     * Singleton instance method
+     * @param context application context (use context.getApplicationContext())
+     * @return this
+     */
     public static DatabaseHelper getInstance(Context context){
         if(sInstance == null) {
             sInstance = new DatabaseHelper(context);
@@ -37,6 +42,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return sInstance;
     }
 
+    @Override
+    public void onCreate(SQLiteDatabase db) {
+        db.execSQL(CitiesContracts.CREATE_TABLE);
+    }
+
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        if(oldVersion < newVersion){
+            db.execSQL("DROP TABLE IF EXISTS "+ CitiesContracts.TABLE_NAME);
+            onCreate(db);
+        }
+    }
+
+    /**
+     * Insert via ContentValues only (no transactions)
+     * @param cityList - the list of cities
+     * @return time spent
+     */
     public long storeCitiesInDb(List<CityResponse.City> cityList){
 
         long startTime = System.currentTimeMillis();
@@ -55,12 +78,38 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return System.currentTimeMillis() - startTime;
     }
 
+    /**
+     * Insert via Prepared statement (no transactions)
+     * @param cityList the list of cities
+     * @return time spent
+     */
     public long storeCitiesInDbPrepared(List<CityResponse.City> cityList){
         long startTime = System.currentTimeMillis();
         SQLiteDatabase db = getWritableDatabase();
         SQLiteStatement stmtInsert = db.compileStatement(CitiesContracts.SQL_INSERT);
 
-        try {
+        for (CityResponse.City city : cityList) {
+            stmtInsert.clearBindings();
+            stmtInsert.bindString(1, city.name);
+            stmtInsert.bindString(2, city.country);
+            stmtInsert.bindString(3, city.subCountry);
+            stmtInsert.bindString(4, city.geoNameId);
+            stmtInsert.executeInsert();
+        }
+
+        return System.currentTimeMillis() - startTime;
+    }
+
+    /**
+     * Insert via Prepared statement with transactions
+     * @param cityList - the list of cities
+     * @return time spent
+     */
+    public long storeCitiesInDbPreparedTransaction(List<CityResponse.City> cityList){
+        long startTime = System.currentTimeMillis();
+        SQLiteDatabase db = getWritableDatabase();
+        SQLiteStatement stmtInsert = db.compileStatement(CitiesContracts.SQL_INSERT);
+        try{
             db.beginTransaction();
 
             for (CityResponse.City city : cityList) {
@@ -71,17 +120,57 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 stmtInsert.bindString(4, city.geoNameId);
                 stmtInsert.executeInsert();
             }
+
             db.setTransactionSuccessful();
         }catch(Exception ex){
-            throw new RuntimeException("Invalid db operation on prepared insert");
-        }finally {
+
+        }finally{
             db.endTransaction();
         }
-        return System.currentTimeMillis() - startTime;
 
+        return System.currentTimeMillis() - startTime;
     }
 
-    public long storeCitiesRawInsert(List<CityResponse.City> cityList){
+    /**
+     * Inserts via ContentValues using transcations
+     * @param cityList the list of cities
+     * @return time spent
+     */
+    public long storeCitiesInDbTransactions(List<CityResponse.City> cityList){
+        long startTime = System.currentTimeMillis();
+
+        SQLiteDatabase db = getWritableDatabase();
+        try{
+            db.beginTransaction();
+
+            for(CityResponse.City city: cityList){
+
+                ContentValues contentValues = new ContentValues();
+                contentValues.put(CitiesContracts.KEY_NAME, city.name);
+                contentValues.put(CitiesContracts.KEY_COUNTRY, city.country);
+                contentValues.put(CitiesContracts.KEY_SUB_COUNTRY, city.subCountry);
+                contentValues.put(CitiesContracts.KEY_GEO_NAME_ID, city.geoNameId);
+
+                db.insert(CitiesContracts.TABLE_NAME, null, contentValues);
+            }
+
+            db.setTransactionSuccessful();
+        }catch(Exception ex){
+
+        }finally{
+            db.endTransaction();
+        }
+
+
+        return System.currentTimeMillis() - startTime;
+    }
+
+    /**
+     * Inserts via Raw Query
+     * @param cityList - the list of cities
+     * @return time spent
+     */
+    public long storeCitiesInDbRaw(List<CityResponse.City> cityList){
         long startTime = System.currentTimeMillis();
         SQLiteDatabase db = getWritableDatabase();
         for(CityResponse.City city: cityList) {
@@ -90,6 +179,26 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return System.currentTimeMillis() - startTime;
     }
 
+    /**
+     * Inserts via Raw Query with transactions
+     * @param cityList - the list of cities
+     * @return time spent
+     */
+    public long storeCitiesInDbRawTransaction(List<CityResponse.City> cityList){
+        long startTime = System.currentTimeMillis();
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        for(CityResponse.City city: cityList) {
+            db.rawQuery(CitiesContracts.SQL_INSERT, new String []{city.name, city.country, city.subCountry, city.geoNameId});
+        }
+        db.setTransactionSuccessful();
+        db.endTransaction();
+        return System.currentTimeMillis() - startTime;
+    }
+
+    /**
+     * Deletes all cities from the database
+     */
     public void deleteCities(){
         long startTime = System.currentTimeMillis();
         SQLiteDatabase db = getReadableDatabase();
@@ -97,17 +206,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Log.d(TAG, "Delete all cities took "+ (System.currentTimeMillis() - startTime) + "ms");
     }
 
-    @Override
-    public void onCreate(SQLiteDatabase db) {
-        db.execSQL(CitiesContracts.CREATE_TABLE);
-    }
 
-    @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        if(oldVersion < newVersion){
-            db.execSQL("DROP TABLE IF EXISTS "+ CitiesContracts.TABLE_NAME);
-            onCreate(db);
-        }
-    }
 
 }

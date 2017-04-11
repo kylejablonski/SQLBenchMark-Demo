@@ -1,11 +1,12 @@
 package com.kdotj.demo.sqlbenchmarkdemo.cities;
 
+import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.annotation.IdRes;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -16,7 +17,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
-import android.widget.RadioGroup;
 
 import com.kdotj.demo.sqlbenchmarkdemo.R;
 import com.kdotj.demo.sqlbenchmarkdemo.data.CityResponse;
@@ -41,7 +41,6 @@ public class CitiesFragment extends Fragment {
     private ProgressBar mPbLoading;
     private AppCompatTextView mTvEmpty;
     private FloatingActionButton mBtnRefresh;
-    private RadioGroup mGroupOptions;
 
     private int mGroupOption;
     private long mTimePassed;
@@ -72,16 +71,11 @@ public class CitiesFragment extends Fragment {
         mBtnRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                v.setEnabled(false);
                 new CityTask().execute();
             }
         });
-        mGroupOptions = (RadioGroup) view.findViewById(R.id.group_options);
-        mGroupOptions.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup group, @IdRes int checkedId) {
-                mGroupOption = checkedId;
-            }
-        });
+
         mTvEmpty = (AppCompatTextView) view.findViewById(R.id.tv_empty);
         mPbLoading = (ProgressBar) view.findViewById(R.id.pb_loading);
         mCityProcessingTime = (AppCompatTextView) view.findViewById(R.id.tv_time_spent);
@@ -95,10 +89,8 @@ public class CitiesFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mPbLoading.setVisibility(View.GONE);
-        mTvEmpty.setVisibility(View.VISIBLE);
-        mCityProcessingTime.setText("Select an option and click refresh");
-        mGroupOption = R.id.option_content_values;
+        resetUI();
+        mGroupOption = 0;
     }
 
     @Override
@@ -111,15 +103,32 @@ public class CitiesFragment extends Fragment {
 
         if(item.getItemId() == R.id.action_delete){
             deleteCities();
-            mCityList.clear();
-            mCityAdapter.notifyDataSetChanged();
-            mPbLoading.setVisibility(View.GONE);
-            mTvEmpty.setVisibility(View.VISIBLE);
-            mCityProcessingTime.setText("Select an option and click refresh");
+            resetUI();
             return true;
-        }else {
+        }else if(item.getItemId() == R.id.action_option){
+            showOptionsDialog();
+            return true;
+        } else {
             return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void showOptionsDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog);
+            builder.setSingleChoiceItems(R.array.options_items, mGroupOption, new DialogInterface.OnClickListener(){
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    if(mGroupOption != which) {
+                        mGroupOption = which;
+                        resetUI();
+                    }
+                    dialog.dismiss();
+                }
+            });
+        builder.setTitle("Select an option");
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+
     }
 
     private List<CityResponse.City> readCityFile(){
@@ -134,15 +143,24 @@ public class CitiesFragment extends Fragment {
         }
 
         DatabaseHelper databaseHelper = DatabaseHelper.getInstance(getContext().getApplicationContext());
-        if(mGroupOption == R.id.option_content_values){
+        if(mGroupOption == 0){
             mTimePassed = databaseHelper.storeCitiesInDb(mCityList);
             mProcedure = "ContentValues";
-        }else if(mGroupOption == R.id.option_raw_query){
-            mTimePassed = databaseHelper.storeCitiesRawInsert(mCityList);
-            mProcedure = "Raw Query";
-        }else{
+        }else if(mGroupOption == 1){
+            mTimePassed = databaseHelper.storeCitiesInDbTransactions(mCityList);
+            mProcedure = "ContentValues(transaction)";
+        }else if(mGroupOption == 2){
+            mTimePassed = databaseHelper.storeCitiesInDbPreparedTransaction(mCityList);
+            mProcedure = "Prepared statement(transaction)";
+        }else if(mGroupOption == 3){
             mTimePassed = databaseHelper.storeCitiesInDbPrepared(mCityList);
             mProcedure = "Prepared statement";
+        }else if(mGroupOption == 4){
+            mTimePassed = databaseHelper.storeCitiesInDbRaw(mCityList);
+            mProcedure = "Raw Query";
+        }else if(mGroupOption == 5){
+            mTimePassed = databaseHelper.storeCitiesInDbRawTransaction(mCityList);
+            mProcedure = "Raw Query (transaction)";
         }
         return mCityList;
     }
@@ -150,18 +168,26 @@ public class CitiesFragment extends Fragment {
     private void deleteCities(){
         DatabaseHelper databaseHelper = DatabaseHelper.getInstance(getContext().getApplicationContext());
         databaseHelper.deleteCities();
+
+    }
+
+    private void resetUI(){
+        mCityList.clear();
+        mCityAdapter.notifyDataSetChanged();
+        mPbLoading.setVisibility(View.GONE);
+        mTvEmpty.setVisibility(View.VISIBLE);
+        mCityProcessingTime.setText("Select an option and click refresh");
+
     }
 
     class CityTask extends AsyncTask<Void, Integer, List<CityResponse.City>>{
 
-
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            mCityProcessingTime.setText("Calculating processing time");
             mPbLoading.setVisibility(View.VISIBLE);
             mTvEmpty.setVisibility(View.GONE);
-            mCityProcessingTime.setText("Calculating processing time");
-
         }
 
         @Override
@@ -180,6 +206,7 @@ public class CitiesFragment extends Fragment {
                 mTvEmpty.setVisibility(View.VISIBLE);
             }
 
+            mBtnRefresh.setEnabled(true);
             mCityProcessingTime.setText(String.format(Locale.getDefault(), "Storing %s cities took %sms, using %s", String.valueOf(mCityList.size()), Long.toString(mTimePassed), mProcedure));
 
             mCityAdapter.notifyDataSetChanged();

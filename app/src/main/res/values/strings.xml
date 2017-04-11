@@ -2,4 +2,13 @@
     <string name="app_name">SQLBenchMark Demo</string>
 
     <string name="placeholder">Some text</string>
+
+    <string-array name="options_items">
+        <item>Content Values</item>
+        <item>Content Values (transactions)</item>
+        <item>Prepared Statement</item>
+        <item>Prepared Statement (transactions)</item>
+        <item>Raw Query</item>
+        <item>Raw Query (transactions)</item>
+    </string-array>
 </resources>
