@@ -79,6 +79,40 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     /**
+     * Inserts via ContentValues using transcations
+     * @param cityList the list of cities
+     * @return time spent
+     */
+    public long storeCitiesInDbTransactions(List<CityResponse.City> cityList){
+        long startTime = System.currentTimeMillis();
+
+        SQLiteDatabase db = getWritableDatabase();
+        try{
+            db.beginTransaction();
+
+            for(CityResponse.City city: cityList){
+
+                ContentValues contentValues = new ContentValues();
+                contentValues.put(CitiesContracts.KEY_NAME, city.name);
+                contentValues.put(CitiesContracts.KEY_COUNTRY, city.country);
+                contentValues.put(CitiesContracts.KEY_SUB_COUNTRY, city.subCountry);
+                contentValues.put(CitiesContracts.KEY_GEO_NAME_ID, city.geoNameId);
+
+                db.insert(CitiesContracts.TABLE_NAME, null, contentValues);
+            }
+
+            db.setTransactionSuccessful();
+        }catch(Exception ex){
+
+        }finally{
+            db.endTransaction();
+        }
+
+
+        return System.currentTimeMillis() - startTime;
+    }
+
+    /**
      * Insert via Prepared statement (no transactions)
      * @param cityList the list of cities
      * @return time spent
@@ -123,44 +157,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
             db.setTransactionSuccessful();
         }catch(Exception ex){
-
+            // .. handle your exceptions
         }finally{
             db.endTransaction();
         }
-
-        return System.currentTimeMillis() - startTime;
-    }
-
-    /**
-     * Inserts via ContentValues using transcations
-     * @param cityList the list of cities
-     * @return time spent
-     */
-    public long storeCitiesInDbTransactions(List<CityResponse.City> cityList){
-        long startTime = System.currentTimeMillis();
-
-        SQLiteDatabase db = getWritableDatabase();
-        try{
-            db.beginTransaction();
-
-            for(CityResponse.City city: cityList){
-
-                ContentValues contentValues = new ContentValues();
-                contentValues.put(CitiesContracts.KEY_NAME, city.name);
-                contentValues.put(CitiesContracts.KEY_COUNTRY, city.country);
-                contentValues.put(CitiesContracts.KEY_SUB_COUNTRY, city.subCountry);
-                contentValues.put(CitiesContracts.KEY_GEO_NAME_ID, city.geoNameId);
-
-                db.insert(CitiesContracts.TABLE_NAME, null, contentValues);
-            }
-
-            db.setTransactionSuccessful();
-        }catch(Exception ex){
-
-        }finally{
-            db.endTransaction();
-        }
-
 
         return System.currentTimeMillis() - startTime;
     }
@@ -205,7 +205,5 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.delete(CitiesContracts.TABLE_NAME, null, null);
         Log.d(TAG, "Delete all cities took "+ (System.currentTimeMillis() - startTime) + "ms");
     }
-
-
 
 }

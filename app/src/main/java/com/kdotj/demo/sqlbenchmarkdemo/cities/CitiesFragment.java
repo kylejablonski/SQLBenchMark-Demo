@@ -150,11 +150,11 @@ public class CitiesFragment extends Fragment {
             mTimePassed = databaseHelper.storeCitiesInDbTransactions(mCityList);
             mProcedure = "ContentValues(transaction)";
         }else if(mGroupOption == 2){
-            mTimePassed = databaseHelper.storeCitiesInDbPreparedTransaction(mCityList);
-            mProcedure = "Prepared statement(transaction)";
-        }else if(mGroupOption == 3){
             mTimePassed = databaseHelper.storeCitiesInDbPrepared(mCityList);
             mProcedure = "Prepared statement";
+        }else if(mGroupOption == 3){
+            mTimePassed = databaseHelper.storeCitiesInDbPreparedTransaction(mCityList);
+            mProcedure = "Prepared statement(transaction)";
         }else if(mGroupOption == 4){
             mTimePassed = databaseHelper.storeCitiesInDbRaw(mCityList);
             mProcedure = "Raw Query";
