@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">SQLBenchMark Demo</string>
+
+    <string name="placeholder">Some text</string>
+</resources>
