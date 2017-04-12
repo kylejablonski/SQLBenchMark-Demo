@@ -171,6 +171,7 @@ public class CitiesFragment extends Fragment {
         mPbLoading.setVisibility(View.GONE);
         mTvEmpty.setVisibility(View.VISIBLE);
         mCityProcessingTime.setText("Select an option and click refresh");
+        mBtnRefresh.setEnabled(true);
 
     }
 
