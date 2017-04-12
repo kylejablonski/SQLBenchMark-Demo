@@ -3,13 +3,11 @@ Bench mark demo for SQLite using a cities json file of 23018 cities across the w
 
 Please use this as a reference for inserting into android SqliteDatabase (all tests run on Samsung Galaxy S7).
 
-We are going to attempt 6 different insert operations:
+We are going to attempt 4 different insert operations:
 1. ContentValues
 2. Prepared statements
-3. Raw Query
-4. ContentValues w/ Transactions
-5. Prepared statements w/ Transactions
-6. Raw Query w/ Transactions
+3. ContentValues w/ Transactions
+4. Prepared statements w/ Transactions
 
 ### Inserting via ContentValues
 
@@ -62,20 +60,7 @@ Sample usage:
 on 23K items this takes roughly *48000ms+*
 While this is better than ContentValues this is still not a great improvement... lets dig deeper
 
-### Insert via Raw Query:
-
-```java
-      SQLiteDatabase db = getWritableDatabase();
-      for(CityResponse.City city: cityList) {
-          db.rawQuery(CitiesContracts.SQL_INSERT, new String []{city.name, city.country, city.subCountry, city.geoNameId});
-      }
-```
-
-**Results**:
-on 23K items this takes roughly *600ms+* (WOW, look at how fast we can insert using rawQuery!)
-But... there is a better way to improve our inserts still
-
-Now that we know there are three ways to insert data into our DB (in this example at least...), let us take a look at the
+Now that we know there are two ways to insert data into our DB (in this example at least...), let us take a look at the
 work horse of our Database operations, Transactions.
 
 ## Transactions
@@ -142,26 +127,9 @@ As you can note this is a dramatic difference between not using Transactions and
 on 23K items this takes roughly *800ms+*
 Wow! we are already improving our code dramatically!
 
-Finally, last but not least: 
-
-### Raw Query with transactions:
-
-```java
-      SQLiteDatabase db = getWritableDatabase();
-      db.beginTransaction();
-      for(CityResponse.City city: cityList) {
-          db.rawQuery(CitiesContracts.SQL_INSERT, new String []{city.name, city.country, city.subCountry, city.geoNameId});
-      }
-      db.setTransactionSuccessful();
-      db.endTransaction();
-```
-
-**Results**:
-on 23K items this takes roughly *500ms+*
-
 So there it is, we have optimized our inserts by walking through our options.
 
 Some operations here may make sense or time may not matter depending on the use case, but if we want the fastest inserts we MUST
-use the Raw Query option with transactions!
+use the Prepared Statements with transactions!
 
 Good Luck and Happy Coding!
