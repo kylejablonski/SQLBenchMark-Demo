@@ -8,7 +8,5 @@
         <item>Content Values (transactions)</item>
         <item>Prepared Statement</item>
         <item>Prepared Statement (transactions)</item>
-        <item>Raw Query</item>
-        <item>Raw Query (transactions)</item>
     </string-array>
 </resources>

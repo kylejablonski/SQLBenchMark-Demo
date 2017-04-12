@@ -2,6 +2,7 @@ package com.kdotj.demo.sqlbenchmarkdemo.db;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
@@ -9,6 +10,7 @@ import android.util.Log;
 
 import com.kdotj.demo.sqlbenchmarkdemo.data.CityResponse;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -53,6 +55,40 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             db.execSQL("DROP TABLE IF EXISTS "+ CitiesContracts.TABLE_NAME);
             onCreate(db);
         }
+    }
+
+    /**
+     * Reads the City data out of the database
+     * @return List<CityResponse.City> data
+     */
+    public List<CityResponse.City> readCities(){
+        long startTime = System.currentTimeMillis();
+        SQLiteDatabase db = getReadableDatabase();
+
+        Cursor cursor = db.query(CitiesContracts.TABLE_NAME, new String[]{
+                CitiesContracts._ID,
+                CitiesContracts.KEY_NAME,
+                CitiesContracts.KEY_COUNTRY,
+                CitiesContracts.KEY_SUB_COUNTRY,
+                CitiesContracts.KEY_GEO_NAME_ID},
+                null, null, null, null, CitiesContracts.KEY_COUNTRY + " ASC");
+
+        cursor.moveToFirst();
+        List<CityResponse.City> cityList = new ArrayList<>();
+        while(!cursor.isAfterLast()){
+            CityResponse.City city = new CityResponse.City();
+            city.id = cursor.getInt(cursor.getColumnIndexOrThrow(CitiesContracts._ID));
+            city.name = cursor.getString(cursor.getColumnIndexOrThrow(CitiesContracts.KEY_NAME));
+            city.country = cursor.getString(cursor.getColumnIndexOrThrow(CitiesContracts.KEY_COUNTRY));
+            city.subCountry = cursor.getString(cursor.getColumnIndexOrThrow(CitiesContracts.KEY_SUB_COUNTRY));
+            city.geoNameId = cursor.getString(cursor.getColumnIndexOrThrow(CitiesContracts.KEY_GEO_NAME_ID));
+            cityList.add(city);
+            cursor.moveToNext();
+        }
+        cursor.close();
+
+        Log.d(TAG, "Reading cities took "+ (System.currentTimeMillis() - startTime) + "ms");
+        return cityList;
     }
 
     /**
@@ -162,37 +198,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             db.endTransaction();
         }
 
-        return System.currentTimeMillis() - startTime;
-    }
-
-    /**
-     * Inserts via Raw Query
-     * @param cityList - the list of cities
-     * @return time spent
-     */
-    public long storeCitiesInDbRaw(List<CityResponse.City> cityList){
-        long startTime = System.currentTimeMillis();
-        SQLiteDatabase db = getWritableDatabase();
-        for(CityResponse.City city: cityList) {
-            db.rawQuery(CitiesContracts.SQL_INSERT, new String []{city.name, city.country, city.subCountry, city.geoNameId});
-        }
-        return System.currentTimeMillis() - startTime;
-    }
-
-    /**
-     * Inserts via Raw Query with transactions
-     * @param cityList - the list of cities
-     * @return time spent
-     */
-    public long storeCitiesInDbRawTransaction(List<CityResponse.City> cityList){
-        long startTime = System.currentTimeMillis();
-        SQLiteDatabase db = getWritableDatabase();
-        db.beginTransaction();
-        for(CityResponse.City city: cityList) {
-            db.rawQuery(CitiesContracts.SQL_INSERT, new String []{city.name, city.country, city.subCountry, city.geoNameId});
-        }
-        db.setTransactionSuccessful();
-        db.endTransaction();
         return System.currentTimeMillis() - startTime;
     }
 

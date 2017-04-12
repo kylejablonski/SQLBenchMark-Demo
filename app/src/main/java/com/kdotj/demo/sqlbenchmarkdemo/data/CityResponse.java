@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.util.List;
 
 /**
+ * Data Model response for the cities
+ *
  * Created by kyle.jablonski on 4/11/17.
  */
 
@@ -31,6 +33,8 @@ public class CityResponse {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class City implements Parcelable{
+
+        public int id;
 
         @JsonProperty("name")
         public String name;
@@ -51,6 +55,7 @@ public class CityResponse {
 
         @Override
         public void writeToParcel(Parcel dest, int flags) {
+            dest.writeInt(id);
             dest.writeString(name);
             dest.writeString(country);
             dest.writeString(subCountry);
@@ -61,6 +66,7 @@ public class CityResponse {
             @Override
             public City createFromParcel(Parcel source) {
                 City instance = new City();
+                instance.id = source.readInt();
                 instance.name = source.readString();
                 instance.country = source.readString();
                 instance.subCountry = source.readString();

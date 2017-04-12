@@ -17,14 +17,11 @@ public class CitiesContracts implements BaseColumns{
 
 
     public static final String CREATE_TABLE = "CREATE TABLE "+ TABLE_NAME + "( "
+            + _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
             + KEY_NAME + " TEXT, "
             + KEY_COUNTRY + " TEXT, "
             + KEY_SUB_COUNTRY + " TEXT, "
             + KEY_GEO_NAME_ID + " TEXT);";
-
-
-    public static final String RAW_QUERY_GET_COUNTRIES = "SELECT * FROM "+ TABLE_NAME;
-
 
     public static final String SQL_INSERT = "INSERT INTO "+ TABLE_NAME + " ( "
             + CitiesContracts.KEY_NAME + ", "

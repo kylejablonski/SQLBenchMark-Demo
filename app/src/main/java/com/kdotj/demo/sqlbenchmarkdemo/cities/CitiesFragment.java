@@ -131,38 +131,32 @@ public class CitiesFragment extends Fragment {
 
     }
 
-    private List<CityResponse.City> readCityFile(){
+    private void readCityFile(){
 
+        List<CityResponse.City> cityList = new ArrayList<>();
         FileIO fileIo = new FileIO(getContext());
         try {
             String citiesRaw = fileIo.readCities(R.raw.cities);
-            mCityList.clear();
-            mCityList.addAll(CityResponse.fromJson(citiesRaw));
+            cityList.addAll(CityResponse.fromJson(citiesRaw));
         }catch(IOException ex){
             throw new IllegalStateException("Unable to read the city file.");
         }
 
         DatabaseHelper databaseHelper = DatabaseHelper.getInstance(getContext().getApplicationContext());
         if(mGroupOption == 0){
-            mTimePassed = databaseHelper.storeCitiesInDb(mCityList);
+            mTimePassed = databaseHelper.storeCitiesInDb(cityList);
             mProcedure = "ContentValues";
         }else if(mGroupOption == 1){
-            mTimePassed = databaseHelper.storeCitiesInDbTransactions(mCityList);
+            mTimePassed = databaseHelper.storeCitiesInDbTransactions(cityList);
             mProcedure = "ContentValues(transaction)";
         }else if(mGroupOption == 2){
-            mTimePassed = databaseHelper.storeCitiesInDbPrepared(mCityList);
+            mTimePassed = databaseHelper.storeCitiesInDbPrepared(cityList);
             mProcedure = "Prepared statement";
         }else if(mGroupOption == 3){
-            mTimePassed = databaseHelper.storeCitiesInDbPreparedTransaction(mCityList);
+            mTimePassed = databaseHelper.storeCitiesInDbPreparedTransaction(cityList);
             mProcedure = "Prepared statement(transaction)";
-        }else if(mGroupOption == 4){
-            mTimePassed = databaseHelper.storeCitiesInDbRaw(mCityList);
-            mProcedure = "Raw Query";
-        }else if(mGroupOption == 5){
-            mTimePassed = databaseHelper.storeCitiesInDbRawTransaction(mCityList);
-            mProcedure = "Raw Query (transaction)";
         }
-        return mCityList;
+
     }
 
     private void deleteCities(){
@@ -193,7 +187,11 @@ public class CitiesFragment extends Fragment {
         @Override
         protected List<CityResponse.City> doInBackground(Void... params) {
             deleteCities();
-            return readCityFile();
+            readCityFile();
+            DatabaseHelper databaseHelper = DatabaseHelper.getInstance(getContext().getApplicationContext());
+            mCityList.clear();
+            mCityList.addAll(databaseHelper.readCities());
+            return mCityList;
         }
 
         @Override
