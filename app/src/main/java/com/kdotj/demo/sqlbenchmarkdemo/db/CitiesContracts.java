@@ -14,6 +14,7 @@ public class CitiesContracts implements BaseColumns{
     public static final String KEY_COUNTRY = "country";
     public static final String KEY_SUB_COUNTRY = "sub_country";
     public static final String KEY_GEO_NAME_ID = "geo_name_id";
+    public static final String KEY_INDEX = "idx_geo_name_id";
 
 
     public static final String CREATE_TABLE = "CREATE TABLE "+ TABLE_NAME + "( "
@@ -30,4 +31,5 @@ public class CitiesContracts implements BaseColumns{
             + CitiesContracts.KEY_GEO_NAME_ID
             + " ) VALUES (?, ?, ? , ?)";
 
+    public static final String SQL_INDEX_GEO_NAME_ID = "CREATE UNIQUE INDEX "+ KEY_INDEX + " ON "+ TABLE_NAME + "("+ KEY_GEO_NAME_ID+")";
 }

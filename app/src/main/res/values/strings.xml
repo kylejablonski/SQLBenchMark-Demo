@@ -8,5 +8,9 @@
         <item>Content Values (transactions)</item>
         <item>Prepared Statement</item>
         <item>Prepared Statement (transactions)</item>
+        <item>Insert w/o conflict ignore </item>
+        <item>Insert w/o conflict ignore (transcations)</item>
+        <item>Insert w/o conflict replace </item>
+        <item>Insert w/o conflict replace (transcations)</item>
     </string-array>
 </resources>

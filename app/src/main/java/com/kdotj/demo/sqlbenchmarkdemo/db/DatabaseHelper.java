@@ -34,8 +34,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     /**
      * Singleton instance method
-     * @param context application context (use context.getApplicationContext())
-     * @return this
+     * @param context - application context (use context.getApplicationContext())
+     * @return - this
      */
     public static DatabaseHelper getInstance(Context context){
         if(sInstance == null) {
@@ -53,13 +53,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         if(oldVersion < newVersion){
             db.execSQL("DROP TABLE IF EXISTS "+ CitiesContracts.TABLE_NAME);
+            db.execSQL(CitiesContracts.SQL_INDEX_GEO_NAME_ID);
             onCreate(db);
         }
     }
 
     /**
+     * Deletes all cities from the database
+     */
+    public void deleteCities(){
+        long startTime = System.currentTimeMillis();
+        SQLiteDatabase db = getReadableDatabase();
+        db.delete(CitiesContracts.TABLE_NAME, null, null);
+        Log.d(TAG, "Delete all cities took "+ (System.currentTimeMillis() - startTime) + "ms");
+    }
+
+    /**
      * Reads the City data out of the database
-     * @return List<CityResponse.City> data
+     * @return - List<CityResponse.City> data
      */
     public List<CityResponse.City> readCities(){
         long startTime = System.currentTimeMillis();
@@ -94,7 +105,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     /**
      * Insert via ContentValues only (no transactions)
      * @param cityList - the list of cities
-     * @return time spent
+     * @return - time spent
      */
     public long storeCitiesInDb(List<CityResponse.City> cityList){
 
@@ -116,8 +127,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     /**
      * Inserts via ContentValues using transcations
-     * @param cityList the list of cities
-     * @return time spent
+     * @param cityList - the list of cities
+     * @return - time spent
      */
     public long storeCitiesInDbTransactions(List<CityResponse.City> cityList){
         long startTime = System.currentTimeMillis();
@@ -150,8 +161,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     /**
      * Insert via Prepared statement (no transactions)
-     * @param cityList the list of cities
-     * @return time spent
+     * @param cityList - the list of cities
+     * @return - time spent
      */
     public long storeCitiesInDbPrepared(List<CityResponse.City> cityList){
         long startTime = System.currentTimeMillis();
@@ -173,7 +184,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     /**
      * Insert via Prepared statement with transactions
      * @param cityList - the list of cities
-     * @return time spent
+     * @return - time spent
      */
     public long storeCitiesInDbPreparedTransaction(List<CityResponse.City> cityList){
         long startTime = System.currentTimeMillis();
@@ -202,13 +213,68 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     /**
-     * Deletes all cities from the database
+     * Insert via ContentValues with On Conflict strategy Ignore only (no transactions)
+     * Additionally, using this means creating an index on the table for a unique key,
+     * here we are using geoNameId.
+     * @param cityList - the list of cities
+     * @param conflictResolution - resolution strategy for insertWithOnConflict
+     * @return - time spent
      */
-    public void deleteCities(){
+    public long storeCitiesInDbWithOnConflict(List<CityResponse.City> cityList, int conflictResolution){
+
         long startTime = System.currentTimeMillis();
-        SQLiteDatabase db = getReadableDatabase();
-        db.delete(CitiesContracts.TABLE_NAME, null, null);
-        Log.d(TAG, "Delete all cities took "+ (System.currentTimeMillis() - startTime) + "ms");
+        SQLiteDatabase db = getWritableDatabase();
+        for(CityResponse.City city: cityList){
+
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(CitiesContracts.KEY_NAME, city.name);
+            contentValues.put(CitiesContracts.KEY_COUNTRY, city.country);
+            contentValues.put(CitiesContracts.KEY_SUB_COUNTRY, city.subCountry);
+            contentValues.put(CitiesContracts.KEY_GEO_NAME_ID, city.geoNameId);
+
+            db.insertWithOnConflict(CitiesContracts.TABLE_NAME, null, contentValues, conflictResolution);
+        }
+
+        return System.currentTimeMillis() - startTime;
     }
+
+    /**
+     * Inserts via ContentValues using transcations with On Conflict strategy ignore
+     * Additionally, using this means creating an index on the table for a unique key,
+     * here we are using geoNameId.
+     * @param cityList - the list of cities
+     * @param conflictResolution - resolution strategy for insertWithOnConflict
+     * @return - time spent
+     */
+    public long storeCitiesInDbTransactionsWithOnConflict(List<CityResponse.City> cityList, int conflictResolution){
+        long startTime = System.currentTimeMillis();
+
+        SQLiteDatabase db = getWritableDatabase();
+        try{
+            db.beginTransaction();
+
+            for(CityResponse.City city: cityList){
+
+                ContentValues contentValues = new ContentValues();
+                contentValues.put(CitiesContracts.KEY_NAME, city.name);
+                contentValues.put(CitiesContracts.KEY_COUNTRY, city.country);
+                contentValues.put(CitiesContracts.KEY_SUB_COUNTRY, city.subCountry);
+                contentValues.put(CitiesContracts.KEY_GEO_NAME_ID, city.geoNameId);
+
+                db.insertWithOnConflict(CitiesContracts.TABLE_NAME, null, contentValues, conflictResolution);
+            }
+
+            db.setTransactionSuccessful();
+        }catch(Exception ex){
+
+        }finally{
+            db.endTransaction();
+        }
+
+
+        return System.currentTimeMillis() - startTime;
+    }
+
+
 
 }

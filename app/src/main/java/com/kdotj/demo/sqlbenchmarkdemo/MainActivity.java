@@ -7,14 +7,23 @@ import com.kdotj.demo.sqlbenchmarkdemo.cities.CitiesFragment;
 
 public class MainActivity extends AppCompatActivity {
 
+    private CitiesFragment mCitiesFragment;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
+        mCitiesFragment = (CitiesFragment) getSupportFragmentManager().findFragmentByTag(CitiesFragment.class.getSimpleName());
+        if(mCitiesFragment == null){
+            mCitiesFragment = CitiesFragment.newInstance(null);
+        }
+
         getSupportFragmentManager()
                 .beginTransaction()
-                .add(R.id.container, CitiesFragment.newInstance(null), CitiesFragment.class.getSimpleName())
+                .replace(R.id.container, mCitiesFragment, CitiesFragment.class.getSimpleName())
                 .commit();
+
+
     }
 }
